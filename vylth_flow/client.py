@@ -8,6 +8,9 @@ from .resources.payouts import AsyncPayouts, Payouts
 from .resources.swaps import AsyncSwaps, Swaps
 from .resources.wallets import AsyncWallets, Wallets
 from .resources.webhooks import Webhooks
+from .resources.payment_links import AsyncPaymentLinks, PaymentLinks
+from .resources.subscriptions import AsyncSubscriptions, Subscriptions
+from .resources.teams import AsyncTeams, Teams
 
 
 class Flow:
@@ -53,6 +56,9 @@ class Flow:
         self.wallets = Wallets(self._http)
         self.swaps = Swaps(self._http)
         self.webhooks = Webhooks(webhook_secret or "")
+        self.payment_links = PaymentLinks(self._http)
+        self.subscriptions = Subscriptions(self._http)
+        self.teams = Teams(self._http)
 
     def close(self) -> None:
         """Close the underlying HTTP client."""
@@ -99,6 +105,9 @@ class AsyncFlow:
         self.wallets = AsyncWallets(self._http)
         self.swaps = AsyncSwaps(self._http)
         self.webhooks = Webhooks(webhook_secret or "")
+        self.payment_links = AsyncPaymentLinks(self._http)
+        self.subscriptions = AsyncSubscriptions(self._http)
+        self.teams = AsyncTeams(self._http)
 
     async def close(self) -> None:
         """Close the underlying HTTP client."""
