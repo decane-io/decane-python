@@ -22,12 +22,15 @@ MAX_RETRIES = 3
 RETRY_STATUSES = {429, 500, 502, 503, 504}
 
 
-def _build_headers(api_key: str) -> dict[str, str]:
-    return {
+def _build_headers(api_key: str, api_secret: str | None = None) -> dict[str, str]:
+    headers = {
         "X-API-Key": api_key,
         "Content-Type": "application/json",
-        "User-Agent": "vylth-flow-python/0.3.1",
+        "User-Agent": "vylth-flow-python/0.3.2",
     }
+    if api_secret:
+        headers["X-API-Secret"] = api_secret
+    return headers
 
 
 def _raise_for_status(response: httpx.Response) -> None:
@@ -61,10 +64,10 @@ def _raise_for_status(response: httpx.Response) -> None:
 class SyncHTTP:
     """Synchronous HTTP client with retry logic."""
 
-    def __init__(self, api_key: str, base_url: str, timeout: float):
+    def __init__(self, api_key: str, base_url: str, timeout: float, api_secret: str | None = None):
         self._client = httpx.Client(
             base_url=base_url,
-            headers=_build_headers(api_key),
+            headers=_build_headers(api_key, api_secret),
             timeout=timeout,
         )
 
@@ -117,10 +120,10 @@ class SyncHTTP:
 class AsyncHTTP:
     """Async HTTP client with retry logic."""
 
-    def __init__(self, api_key: str, base_url: str, timeout: float):
+    def __init__(self, api_key: str, base_url: str, timeout: float, api_secret: str | None = None):
         self._client = httpx.AsyncClient(
             base_url=base_url,
-            headers=_build_headers(api_key),
+            headers=_build_headers(api_key, api_secret),
             timeout=timeout,
         )
 

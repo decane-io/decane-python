@@ -42,6 +42,7 @@ class Flow:
         self,
         api_key: str,
         *,
+        api_secret: str | None = None,
         webhook_secret: str | None = None,
         base_url: str = DEFAULT_BASE_URL,
         timeout: float = DEFAULT_TIMEOUT,
@@ -49,7 +50,7 @@ class Flow:
         if not api_key:
             raise ValueError("api_key is required")
 
-        self._http = SyncHTTP(api_key=api_key, base_url=base_url, timeout=timeout)
+        self._http = SyncHTTP(api_key=api_key, base_url=base_url, timeout=timeout, api_secret=api_secret)
 
         self.invoices = Invoices(self._http)
         self.payouts = Payouts(self._http)
@@ -91,6 +92,7 @@ class AsyncFlow:
         self,
         api_key: str,
         *,
+        api_secret: str | None = None,
         webhook_secret: str | None = None,
         base_url: str = DEFAULT_BASE_URL,
         timeout: float = DEFAULT_TIMEOUT,
@@ -98,7 +100,7 @@ class AsyncFlow:
         if not api_key:
             raise ValueError("api_key is required")
 
-        self._http = AsyncHTTP(api_key=api_key, base_url=base_url, timeout=timeout)
+        self._http = AsyncHTTP(api_key=api_key, base_url=base_url, timeout=timeout, api_secret=api_secret)
 
         self.invoices = AsyncInvoices(self._http)
         self.payouts = AsyncPayouts(self._http)
