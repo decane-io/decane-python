@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
 from enum import Enum
 from typing import Any
 
@@ -11,11 +10,12 @@ from typing import Any
 class InvoiceStatus(str, Enum):
     CREATED = "created"
     PENDING = "pending"
-    PAID = "paid"
+    CONFIRMING = "confirming"
+    COMPLETED = "completed"
     EXPIRED = "expired"
-    CANCELLED = "cancelled"
     UNDERPAID = "underpaid"
     OVERPAID = "overpaid"
+    FAILED = "failed"
 
 
 class PayoutStatus(str, Enum):
@@ -39,18 +39,25 @@ class Invoice:
 
     id: str
     merchant_id: str
-    amount: float
-    currency: str
-    network: str
+    amount: float           # fiat_amount from API
+    currency: str           # fiat_currency from API
     status: InvoiceStatus
-    wallet_address: str | None = None
-    description: str | None = None
+    # Optional fields
+    network: str | None = None
+    crypto_currency: str | None = None
+    crypto_amount: float | None = None
+    wallet_address: str | None = None   # deposit_address from API
     customer_email: str | None = None
+    customer_name: str | None = None
+    merchant_order_id: str | None = None
     callback_url: str | None = None
+    return_url: str | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
     payment_url: str | None = None
     tx_hash: str | None = None
-    paid_amount: float | None = None
+    paid_amount: float | None = None    # received_amount from API
+    confirmations: int = 0
+    required_confirmations: int = 0
     expires_at: str | None = None
     created_at: str | None = None
     updated_at: str | None = None
@@ -58,21 +65,32 @@ class Invoice:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Invoice:
+        raw_status = data.get("status", "created")
+        try:
+            status = InvoiceStatus(raw_status)
+        except ValueError:
+            status = InvoiceStatus.CREATED
         return cls(
             id=data.get("id", ""),
             merchant_id=data.get("merchant_id", ""),
-            amount=float(data.get("amount", 0)),
-            currency=data.get("currency", ""),
-            network=data.get("network", ""),
-            status=InvoiceStatus(data.get("status", "created")),
-            wallet_address=data.get("wallet_address"),
-            description=data.get("description"),
+            amount=float(data.get("fiat_amount", data.get("amount", 0))),
+            currency=data.get("fiat_currency", data.get("currency", "")),
+            status=status,
+            network=data.get("network"),
+            crypto_currency=data.get("crypto_currency"),
+            crypto_amount=float(data["crypto_amount"]) if data.get("crypto_amount") else None,
+            wallet_address=data.get("deposit_address", data.get("wallet_address")),
             customer_email=data.get("customer_email"),
+            customer_name=data.get("customer_name"),
+            merchant_order_id=data.get("merchant_order_id"),
             callback_url=data.get("callback_url"),
+            return_url=data.get("return_url"),
             metadata=data.get("metadata") or {},
             payment_url=data.get("payment_url"),
             tx_hash=data.get("tx_hash"),
-            paid_amount=float(data["paid_amount"]) if data.get("paid_amount") else None,
+            paid_amount=float(data["received_amount"]) if data.get("received_amount") else None,
+            confirmations=int(data.get("confirmations", 0)),
+            required_confirmations=int(data.get("required_confirmations", 0)),
             expires_at=data.get("expires_at"),
             created_at=data.get("created_at"),
             updated_at=data.get("updated_at"),
@@ -120,30 +138,47 @@ class Payout:
     """A vendor payout request."""
 
     id: str
-    amount: float
-    currency: str
     network: str
-    destination: str
-    status: PayoutStatus
+    currency: str
+    status: str
+    gross_amount: float = 0
+    net_amount: float = 0
+    fee_amount: float = 0
+    nmc_amount: float | None = None
+    recipient_address: str = ""
+    reference_id: str | None = None
+    batch_id: str | None = None
     tx_hash: str | None = None
-    fee: float | None = None
-    metadata: dict[str, Any] = field(default_factory=dict)
+    error_message: str | None = None
     created_at: str | None = None
     completed_at: str | None = None
     _raw: dict[str, Any] = field(default_factory=dict, repr=False)
+
+    # Convenience aliases
+    @property
+    def amount(self) -> float:
+        return self.gross_amount
+
+    @property
+    def destination(self) -> str:
+        return self.recipient_address
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Payout:
         return cls(
             id=data.get("id", ""),
-            amount=float(data.get("amount", 0)),
-            currency=data.get("currency", ""),
             network=data.get("network", ""),
-            destination=data.get("destination_address", data.get("destination", "")),
-            status=PayoutStatus(data.get("status", "pending")),
+            currency=data.get("currency", ""),
+            status=data.get("status", "pending"),
+            gross_amount=float(data.get("gross_amount", data.get("amount", 0))),
+            net_amount=float(data.get("net_amount", 0)),
+            fee_amount=float(data.get("fee_amount", data.get("fee", 0))),
+            nmc_amount=float(data["nmc_amount"]) if data.get("nmc_amount") else None,
+            recipient_address=data.get("recipient_address", data.get("destination_address", "")),
+            reference_id=data.get("reference_id"),
+            batch_id=data.get("batch_id"),
             tx_hash=data.get("tx_hash"),
-            fee=float(data["fee"]) if data.get("fee") else None,
-            metadata=data.get("metadata") or {},
+            error_message=data.get("error_message"),
             created_at=data.get("created_at"),
             completed_at=data.get("completed_at"),
             _raw=data,

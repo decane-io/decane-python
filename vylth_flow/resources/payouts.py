@@ -19,22 +19,19 @@ class Payouts:
         amount: float,
         currency: str,
         network: str,
-        destination: str,
+        recipient_address: str,
         *,
-        metadata: dict[str, Any] | None = None,
-        callback_url: str | None = None,
+        reference_id: str | None = None,
     ) -> Payout:
         """Request a payout to an external wallet address."""
         payload: dict[str, Any] = {
             "amount": amount,
             "currency": currency,
             "network": network,
-            "destination_address": destination,
+            "recipient_address": recipient_address,
         }
-        if metadata is not None:
-            payload["metadata"] = metadata
-        if callback_url is not None:
-            payload["callback_url"] = callback_url
+        if reference_id is not None:
+            payload["reference_id"] = reference_id
 
         data = self._http.post("/vendor/payout", json=payload)
         return Payout.from_dict(data)
@@ -42,12 +39,17 @@ class Payouts:
     def create_batch(
         self,
         payouts: list[dict[str, Any]],
+        *,
+        reference_id: str | None = None,
     ) -> list[Payout]:
         """Create multiple payouts in a single request.
 
-        Each item should have: amount, currency, network, destination_address.
+        Each item should have: amount, currency, network, recipient_address.
         """
-        data = self._http.post("/vendor/payout/batch", json={"payouts": payouts})
+        body: dict[str, Any] = {"payouts": payouts}
+        if reference_id is not None:
+            body["reference_id"] = reference_id
+        data = self._http.post("/vendor/payout/batch", json=body)
         items = data if isinstance(data, list) else data.get("payouts", data.get("items", []))
         return [Payout.from_dict(p) for p in items]
 
@@ -82,27 +84,32 @@ class AsyncPayouts:
         amount: float,
         currency: str,
         network: str,
-        destination: str,
+        recipient_address: str,
         *,
-        metadata: dict[str, Any] | None = None,
-        callback_url: str | None = None,
+        reference_id: str | None = None,
     ) -> Payout:
         payload: dict[str, Any] = {
             "amount": amount,
             "currency": currency,
             "network": network,
-            "destination_address": destination,
+            "recipient_address": recipient_address,
         }
-        if metadata is not None:
-            payload["metadata"] = metadata
-        if callback_url is not None:
-            payload["callback_url"] = callback_url
+        if reference_id is not None:
+            payload["reference_id"] = reference_id
 
         data = await self._http.post("/vendor/payout", json=payload)
         return Payout.from_dict(data)
 
-    async def create_batch(self, payouts: list[dict[str, Any]]) -> list[Payout]:
-        data = await self._http.post("/vendor/payout/batch", json={"payouts": payouts})
+    async def create_batch(
+        self,
+        payouts: list[dict[str, Any]],
+        *,
+        reference_id: str | None = None,
+    ) -> list[Payout]:
+        body: dict[str, Any] = {"payouts": payouts}
+        if reference_id is not None:
+            body["reference_id"] = reference_id
+        data = await self._http.post("/vendor/payout/batch", json=body)
         items = data if isinstance(data, list) else data.get("payouts", data.get("items", []))
         return [Payout.from_dict(p) for p in items]
 

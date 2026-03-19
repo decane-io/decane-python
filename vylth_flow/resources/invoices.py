@@ -17,31 +17,40 @@ class Invoices:
     def create(
         self,
         amount: float,
-        currency: str,
-        network: str,
+        currency: str = "USD",
         *,
-        description: str | None = None,
+        network: str | None = None,
+        crypto_currency: str | None = None,
+        merchant_order_id: str | None = None,
         customer_email: str | None = None,
+        customer_name: str | None = None,
         callback_url: str | None = None,
+        return_url: str | None = None,
         metadata: dict[str, Any] | None = None,
-        expiry_minutes: int | None = None,
     ) -> Invoice:
-        """Create a payment invoice. Returns an Invoice with wallet address and QR code URL."""
-        payload: dict[str, Any] = {
-            "amount": amount,
-            "currency": currency,
-            "network": network,
-        }
-        if description is not None:
-            payload["description"] = description
+        """Create a payment invoice.
+
+        Omit ``network`` and ``crypto_currency`` to create a **flex invoice**
+        where the customer picks their preferred crypto on the payment page.
+        Supply both to lock the rate at creation time (fixed invoice).
+        """
+        payload: dict[str, Any] = {"amount": amount, "currency": currency}
+        if network is not None:
+            payload["network"] = network
+        if crypto_currency is not None:
+            payload["crypto_currency"] = crypto_currency
+        if merchant_order_id is not None:
+            payload["merchant_order_id"] = merchant_order_id
         if customer_email is not None:
             payload["customer_email"] = customer_email
+        if customer_name is not None:
+            payload["customer_name"] = customer_name
         if callback_url is not None:
             payload["callback_url"] = callback_url
+        if return_url is not None:
+            payload["return_url"] = return_url
         if metadata is not None:
             payload["metadata"] = metadata
-        if expiry_minutes is not None:
-            payload["expiry_minutes"] = expiry_minutes
 
         data = self._http.post("/invoices", json=payload)
         return Invoice.from_dict(data)
@@ -83,30 +92,34 @@ class AsyncInvoices:
     async def create(
         self,
         amount: float,
-        currency: str,
-        network: str,
+        currency: str = "USD",
         *,
-        description: str | None = None,
+        network: str | None = None,
+        crypto_currency: str | None = None,
+        merchant_order_id: str | None = None,
         customer_email: str | None = None,
+        customer_name: str | None = None,
         callback_url: str | None = None,
+        return_url: str | None = None,
         metadata: dict[str, Any] | None = None,
-        expiry_minutes: int | None = None,
     ) -> Invoice:
-        payload: dict[str, Any] = {
-            "amount": amount,
-            "currency": currency,
-            "network": network,
-        }
-        if description is not None:
-            payload["description"] = description
+        payload: dict[str, Any] = {"amount": amount, "currency": currency}
+        if network is not None:
+            payload["network"] = network
+        if crypto_currency is not None:
+            payload["crypto_currency"] = crypto_currency
+        if merchant_order_id is not None:
+            payload["merchant_order_id"] = merchant_order_id
         if customer_email is not None:
             payload["customer_email"] = customer_email
+        if customer_name is not None:
+            payload["customer_name"] = customer_name
         if callback_url is not None:
             payload["callback_url"] = callback_url
+        if return_url is not None:
+            payload["return_url"] = return_url
         if metadata is not None:
             payload["metadata"] = metadata
-        if expiry_minutes is not None:
-            payload["expiry_minutes"] = expiry_minutes
 
         data = await self._http.post("/invoices", json=payload)
         return Invoice.from_dict(data)
