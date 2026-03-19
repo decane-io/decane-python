@@ -26,7 +26,7 @@ def _build_headers(api_key: str) -> dict[str, str]:
     return {
         "X-API-Key": api_key,
         "Content-Type": "application/json",
-        "User-Agent": "vylth-flow-python/0.1.0",
+        "User-Agent": "vylth-flow-python/0.3.0",
     }
 
 
