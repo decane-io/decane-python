@@ -33,7 +33,7 @@ class Webhooks:
         if isinstance(payload, str):
             payload = payload.encode("utf-8")
 
-        expected = hmac.new(
+        expected = "sha256=" + hmac.new(
             self._secret.encode("utf-8"),
             payload,
             hashlib.sha256,

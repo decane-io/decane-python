@@ -26,7 +26,7 @@ def _build_headers(api_key: str, api_secret: str | None = None) -> dict[str, str
     headers = {
         "X-API-Key": api_key,
         "Content-Type": "application/json",
-        "User-Agent": "vylth-flow-python/0.4.0",
+        "User-Agent": "vylth-flow-python/0.4.1",
     }
     if api_secret:
         headers["X-API-Secret"] = api_secret
