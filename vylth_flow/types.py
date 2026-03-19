@@ -282,9 +282,9 @@ class WebhookEvent:
     def from_dict(cls, data: dict[str, Any]) -> WebhookEvent:
         return cls(
             id=data.get("id", ""),
-            type=data.get("type", data.get("event", "")),
+            type=data.get("event", data.get("type", "")),
             data=data.get("data", {}),
-            created_at=data.get("created_at"),
+            created_at=data.get("timestamp", data.get("created_at")),
             _raw=data,
         )
 
