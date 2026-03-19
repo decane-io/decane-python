@@ -9,6 +9,7 @@ from typing import Any
 
 
 class InvoiceStatus(str, Enum):
+    CREATED = "created"
     PENDING = "pending"
     PAID = "paid"
     EXPIRED = "expired"
@@ -63,7 +64,7 @@ class Invoice:
             amount=float(data.get("amount", 0)),
             currency=data.get("currency", ""),
             network=data.get("network", ""),
-            status=InvoiceStatus(data.get("status", "pending")),
+            status=InvoiceStatus(data.get("status", "created")),
             wallet_address=data.get("wallet_address"),
             description=data.get("description"),
             customer_email=data.get("customer_email"),
