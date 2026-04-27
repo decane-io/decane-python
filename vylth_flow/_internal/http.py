@@ -16,7 +16,7 @@ from ..errors import (
     ValidationError,
 )
 
-DEFAULT_BASE_URL = "https://flow.vylth.com/api/flow/"
+DEFAULT_BASE_URL = "https://app.vylthflow.com/api/flow/"
 DEFAULT_TIMEOUT = 30.0
 MAX_RETRIES = 3
 RETRY_STATUSES = {429, 500, 502, 503, 504}
