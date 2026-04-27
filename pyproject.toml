@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "vylth-flow"
-version = "0.4.1"
+version = "0.4.2"
 description = "Official Python SDK for Vylth Flow — self-custody crypto payment processing"
 readme = "README.md"
 license = "MIT"
@@ -31,8 +31,8 @@ dependencies = [
 dev = ["pytest", "pytest-asyncio", "respx", "ruff"]
 
 [project.urls]
-Homepage = "https://flow.vylth.com"
-Documentation = "https://docs.flow.vylth.com"
+Homepage = "https://app.vylthflow.com"
+Documentation = "https://app.vylthflow.com/docs"
 Repository = "https://github.com/VYLTH/flow-python"
 Issues = "https://github.com/VYLTH/flow-python/issues"
 
