@@ -1,4 +1,4 @@
-"""Vylth Flow client — the main entry point for the SDK."""
+"""Flow client — the main entry point for the SDK."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from .resources.teams import AsyncTeams, Teams
 
 
 class Flow:
-    """Synchronous Vylth Flow client.
+    """Synchronous Flow client.
 
     Usage::
 
@@ -76,7 +76,7 @@ class Flow:
 
 
 class AsyncFlow:
-    """Async Vylth Flow client.
+    """Async Flow client.
 
     Usage::
 

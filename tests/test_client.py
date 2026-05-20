@@ -1,4 +1,4 @@
-"""Tests for the Vylth Flow Python SDK."""
+"""Tests for the Flow Python SDK."""
 
 import hashlib
 import hmac

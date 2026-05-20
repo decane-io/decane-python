@@ -1,4 +1,4 @@
-"""HTTP transport layer for Vylth Flow SDK."""
+"""HTTP transport layer for Flow SDK."""
 
 from __future__ import annotations
 

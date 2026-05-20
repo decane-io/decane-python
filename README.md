@@ -1,6 +1,6 @@
 # vylth-flow
 
-Official Python SDK for **Vylth Flow** — self-custody crypto payment processing.
+Official Python SDK for **Flow** — self-custody crypto payment processing.
 
 [![PyPI](https://img.shields.io/pypi/v/vylth-flow)](https://pypi.org/project/vylth-flow/)
 [![Python](https://img.shields.io/pypi/pyversions/vylth-flow)](https://pypi.org/project/vylth-flow/)

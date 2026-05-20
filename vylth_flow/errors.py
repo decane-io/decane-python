@@ -1,10 +1,10 @@
-"""Vylth Flow SDK error types."""
+"""Flow SDK error types."""
 
 from __future__ import annotations
 
 
 class FlowError(Exception):
-    """Base error for all Vylth Flow SDK errors."""
+    """Base error for all Flow SDK errors."""
 
     def __init__(self, message: str, code: str | None = None, status: int | None = None):
         self.message = message

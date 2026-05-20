@@ -1,4 +1,4 @@
-"""Vylth Flow SDK data types."""
+"""Flow SDK data types."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Vylth Flow — Official Python SDK for self-custody crypto payment processing."""
+"""Flow — Official Python SDK for self-custody crypto payment processing."""
 
 from .client import Flow, AsyncFlow
 from .errors import (
