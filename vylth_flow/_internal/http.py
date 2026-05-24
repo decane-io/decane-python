@@ -16,7 +16,7 @@ from ..errors import (
     ValidationError,
 )
 
-DEFAULT_BASE_URL = "https://app.vylthflow.com/api/flow/"
+DEFAULT_BASE_URL = "https://app.granthe.io/api/flow/"
 DEFAULT_TIMEOUT = 30.0
 MAX_RETRIES = 3
 RETRY_STATUSES = {429, 500, 502, 503, 504}
@@ -26,7 +26,7 @@ def _build_headers(api_key: str, api_secret: str | None = None) -> dict[str, str
     headers = {
         "X-API-Key": api_key,
         "Content-Type": "application/json",
-        "User-Agent": "vylth-flow-python/0.4.2",
+        "User-Agent": "granthe-python/0.4.2",
     }
     if api_secret:
         headers["X-API-Secret"] = api_secret

@@ -8,7 +8,7 @@ import httpx
 import pytest
 import respx
 
-from vylth_flow import (
+from granthe import (
     Flow,
     AsyncFlow,
     FlowError,
@@ -18,7 +18,7 @@ from vylth_flow import (
     InvalidSignatureError,
 )
 
-BASE = "https://flow.vylth.com/api/flow"
+BASE = "https://granthe.io/api/flow"
 
 
 # ── Sync Client Tests ──
@@ -51,7 +51,7 @@ class TestInvoices:
                 "network": "tron",
                 "status": "pending",
                 "wallet_address": "TXyz123",
-                "payment_url": "https://pay.flow.vylth.com/inv_123",
+                "payment_url": "https://pay.granthe.io/inv_123",
             })
         )
         with Flow(api_key="test_key") as flow:

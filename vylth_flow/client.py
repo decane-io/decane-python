@@ -18,7 +18,7 @@ class Flow:
 
     Usage::
 
-        from vylth_flow import Flow
+        from granthe import Flow
 
         flow = Flow(api_key="vf_live_...", webhook_secret="whsec_...")
 
@@ -80,7 +80,7 @@ class AsyncFlow:
 
     Usage::
 
-        from vylth_flow import AsyncFlow
+        from granthe import AsyncFlow
 
         async with AsyncFlow(api_key="vf_live_...") as flow:
             invoice = await flow.invoices.create(

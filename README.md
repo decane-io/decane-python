@@ -1,20 +1,20 @@
-# vylth-flow
+# granthe
 
 Official Python SDK for **Flow** — self-custody crypto payment processing.
 
-[![PyPI](https://img.shields.io/pypi/v/vylth-flow)](https://pypi.org/project/vylth-flow/)
-[![Python](https://img.shields.io/pypi/pyversions/vylth-flow)](https://pypi.org/project/vylth-flow/)
+[![PyPI](https://img.shields.io/pypi/v/granthe)](https://pypi.org/project/granthe/)
+[![Python](https://img.shields.io/pypi/pyversions/granthe)](https://pypi.org/project/granthe/)
 
 ## Install
 
 ```bash
-pip install vylth-flow
+pip install granthe
 ```
 
 ## Quick Start
 
 ```python
-from vylth_flow import Flow
+from granthe import Flow
 
 flow = Flow(api_key="vf_live_...", webhook_secret="whsec_...")
 
@@ -42,7 +42,7 @@ print(f"Payout ID: {payout.id}")
 ## Async Support
 
 ```python
-from vylth_flow import AsyncFlow
+from granthe import AsyncFlow
 
 async with AsyncFlow(api_key="vf_live_...") as flow:
     invoice = await flow.invoices.create(
@@ -117,7 +117,7 @@ swap = flow.swaps.create("BTC", "USDT", amount=0.01)
 ### Webhooks
 
 ```python
-from vylth_flow import Flow, InvalidSignatureError
+from granthe import Flow, InvalidSignatureError
 
 flow = Flow(api_key="vf_live_...", webhook_secret="whsec_...")
 
@@ -141,7 +141,7 @@ def handle_webhook(request):
 ## Error Handling
 
 ```python
-from vylth_flow import Flow, FlowError, AuthenticationError, RateLimitError
+from granthe import Flow, FlowError, AuthenticationError, RateLimitError
 
 flow = Flow(api_key="vf_live_...")
 
@@ -161,7 +161,7 @@ except FlowError as e:
 flow = Flow(
     api_key="vf_live_...",
     webhook_secret="whsec_...",      # For webhook verification
-    base_url="https://flow.vylth.com/api/flow",  # Default
+    base_url="https://granthe.io/api/flow",  # Default
     timeout=30.0,                     # Request timeout in seconds
 )
 ```
