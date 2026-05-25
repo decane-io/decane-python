@@ -1,10 +1,10 @@
-"""Flow SDK error types."""
+"""Granthe SDK error types."""
 
 from __future__ import annotations
 
 
-class FlowError(Exception):
-    """Base error for all Flow SDK errors."""
+class GrantheError(Exception):
+    """Base error for all Granthe SDK errors."""
 
     def __init__(self, message: str, code: str | None = None, status: int | None = None):
         self.message = message
@@ -16,21 +16,21 @@ class FlowError(Exception):
         return f"{self.__class__.__name__}(message={self.message!r}, code={self.code!r}, status={self.status})"
 
 
-class AuthenticationError(FlowError):
+class AuthenticationError(GrantheError):
     """Invalid or missing API key."""
 
     def __init__(self, message: str = "Invalid or missing API key"):
         super().__init__(message, code="authentication_error", status=401)
 
 
-class NotFoundError(FlowError):
+class NotFoundError(GrantheError):
     """Resource not found."""
 
     def __init__(self, message: str = "Resource not found"):
         super().__init__(message, code="not_found", status=404)
 
 
-class ValidationError(FlowError):
+class ValidationError(GrantheError):
     """Invalid request parameters."""
 
     def __init__(self, message: str = "Validation error", errors: list[dict] | None = None):
@@ -38,7 +38,7 @@ class ValidationError(FlowError):
         super().__init__(message, code="validation_error", status=422)
 
 
-class RateLimitError(FlowError):
+class RateLimitError(GrantheError):
     """Too many requests."""
 
     def __init__(self, message: str = "Rate limit exceeded", retry_after: float | None = None):
@@ -46,14 +46,14 @@ class RateLimitError(FlowError):
         super().__init__(message, code="rate_limit", status=429)
 
 
-class ServerError(FlowError):
+class ServerError(GrantheError):
     """Server-side error."""
 
     def __init__(self, message: str = "Internal server error"):
         super().__init__(message, code="server_error", status=500)
 
 
-class InvalidSignatureError(FlowError):
+class InvalidSignatureError(GrantheError):
     """Webhook signature verification failed."""
 
     def __init__(self, message: str = "Invalid webhook signature"):

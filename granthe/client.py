@@ -1,4 +1,4 @@
-"""Flow client — the main entry point for the SDK."""
+"""Granthe client — the main entry point for the SDK."""
 
 from __future__ import annotations
 
@@ -13,14 +13,14 @@ from .resources.subscriptions import AsyncSubscriptions, Subscriptions
 from .resources.teams import AsyncTeams, Teams
 
 
-class Flow:
-    """Synchronous Flow client.
+class Granthe:
+    """Synchronous Granthe client.
 
     Usage::
 
-        from granthe import Flow
+        from granthe import Granthe
 
-        flow = Flow(api_key="vf_live_...", webhook_secret="whsec_...")
+        flow = Granthe(api_key="vf_live_...", webhook_secret="whsec_...")
 
         # Create an invoice
         invoice = flow.invoices.create(
@@ -65,24 +65,24 @@ class Flow:
         """Close the underlying HTTP client."""
         self._http.close()
 
-    def __enter__(self) -> Flow:
+    def __enter__(self) -> Granthe:
         return self
 
     def __exit__(self, *args: object) -> None:
         self.close()
 
     def __repr__(self) -> str:
-        return "Flow(connected)"
+        return "Granthe(connected)"
 
 
-class AsyncFlow:
-    """Async Flow client.
+class AsyncGranthe:
+    """Async Granthe client.
 
     Usage::
 
-        from granthe import AsyncFlow
+        from granthe import AsyncGranthe
 
-        async with AsyncFlow(api_key="vf_live_...") as flow:
+        async with AsyncGranthe(api_key="vf_live_...") as flow:
             invoice = await flow.invoices.create(
                 amount=100, currency="USDT", network="tron",
             )
@@ -115,11 +115,11 @@ class AsyncFlow:
         """Close the underlying HTTP client."""
         await self._http.close()
 
-    async def __aenter__(self) -> AsyncFlow:
+    async def __aenter__(self) -> AsyncGranthe:
         return self
 
     async def __aexit__(self, *args: object) -> None:
         await self.close()
 
     def __repr__(self) -> str:
-        return "AsyncFlow(connected)"
+        return "AsyncGranthe(connected)"

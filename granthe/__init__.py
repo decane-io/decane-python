@@ -1,8 +1,8 @@
-"""Flow — Official Python SDK for self-custody crypto payment processing."""
+"""Granthe — Official Python SDK for institutional liquidity rail for crypto settlement."""
 
-from .client import Flow, AsyncFlow
+from .client import Granthe, AsyncGranthe
 from .errors import (
-    FlowError,
+    GrantheError,
     AuthenticationError,
     NotFoundError,
     ValidationError,
@@ -22,11 +22,11 @@ from .types import (
     WebhookEvent,
 )
 
-__version__ = "0.3.3"
+__version__ = "0.5.0"
 __all__ = [
-    "Flow",
-    "AsyncFlow",
-    "FlowError",
+    "Granthe",
+    "AsyncGranthe",
+    "GrantheError",
     "AuthenticationError",
     "NotFoundError",
     "ValidationError",

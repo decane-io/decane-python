@@ -1,4 +1,4 @@
-"""HTTP transport layer for Flow SDK."""
+"""HTTP transport layer for Granthe SDK."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ import httpx
 
 from ..errors import (
     AuthenticationError,
-    FlowError,
+    GrantheError,
     NotFoundError,
     RateLimitError,
     ServerError,
@@ -58,7 +58,7 @@ def _raise_for_status(response: httpx.Response) -> None:
     if response.status_code >= 500:
         raise ServerError(message)
 
-    raise FlowError(message, code=code, status=response.status_code)
+    raise GrantheError(message, code=code, status=response.status_code)
 
 
 class SyncHTTP:
@@ -93,10 +93,10 @@ class SyncHTTP:
                 if attempt < MAX_RETRIES - 1:
                     time.sleep((2**attempt) * 0.5)
                     continue
-                raise FlowError(f"Connection error: {e}", code="network_error") from e
+                raise GrantheError(f"Connection error: {e}", code="network_error") from e
         if last_exc:
-            raise FlowError(f"Max retries exceeded: {last_exc}", code="network_error") from last_exc
-        raise FlowError("Unexpected error", code="unknown")
+            raise GrantheError(f"Max retries exceeded: {last_exc}", code="network_error") from last_exc
+        raise GrantheError("Unexpected error", code="unknown")
 
     def get(self, path: str, **kwargs: Any) -> Any:
         return self.request("GET", path, **kwargs)
@@ -151,10 +151,10 @@ class AsyncHTTP:
                 if attempt < MAX_RETRIES - 1:
                     await asyncio.sleep((2**attempt) * 0.5)
                     continue
-                raise FlowError(f"Connection error: {e}", code="network_error") from e
+                raise GrantheError(f"Connection error: {e}", code="network_error") from e
         if last_exc:
-            raise FlowError(f"Max retries exceeded: {last_exc}", code="network_error") from last_exc
-        raise FlowError("Unexpected error", code="unknown")
+            raise GrantheError(f"Max retries exceeded: {last_exc}", code="network_error") from last_exc
+        raise GrantheError("Unexpected error", code="unknown")
 
     async def get(self, path: str, **kwargs: Any) -> Any:
         return await self.request("GET", path, **kwargs)

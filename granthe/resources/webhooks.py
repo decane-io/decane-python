@@ -22,7 +22,7 @@ class Webhooks:
 
         Args:
             payload: The raw request body (string or bytes).
-            signature: The value of the X-Flow-Signature header.
+            signature: The value of the X-Granthe-Signature header.
 
         Returns:
             A verified WebhookEvent.

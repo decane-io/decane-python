@@ -1,4 +1,4 @@
-"""Flow SDK data types."""
+"""Granthe SDK data types."""
 
 from __future__ import annotations
 

@@ -1,6 +1,6 @@
 # granthe
 
-Official Python SDK for **Flow** — self-custody crypto payment processing.
+Official Python SDK for Granthe — institutional liquidity rail for crypto settlement.
 
 [![PyPI](https://img.shields.io/pypi/v/granthe)](https://pypi.org/project/granthe/)
 [![Python](https://img.shields.io/pypi/pyversions/granthe)](https://pypi.org/project/granthe/)
@@ -14,12 +14,12 @@ pip install granthe
 ## Quick Start
 
 ```python
-from granthe import Flow
+from granthe import Granthe
 
-flow = Flow(api_key="vf_live_...", webhook_secret="whsec_...")
+granthe = Granthe(api_key="vf_live_...", webhook_secret="whsec_...")
 
 # Create a payment invoice
-invoice = flow.invoices.create(
+invoice = granthe.invoices.create(
     amount=100.00,
     currency="USDT",
     network="tron",
@@ -30,7 +30,7 @@ print(f"Pay to: {invoice.wallet_address}")
 print(f"Status: {invoice.status}")
 
 # Request a payout
-payout = flow.payouts.create(
+payout = granthe.payouts.create(
     amount=50.00,
     currency="USDT",
     network="tron",
@@ -45,7 +45,7 @@ print(f"Payout ID: {payout.id}")
 from granthe import AsyncFlow
 
 async with AsyncFlow(api_key="vf_live_...") as flow:
-    invoice = await flow.invoices.create(
+    invoice = await granthe.invoices.create(
         amount=100, currency="USDT", network="ethereum",
     )
 ```
@@ -56,51 +56,51 @@ async with AsyncFlow(api_key="vf_live_...") as flow:
 
 ```python
 # Create
-invoice = flow.invoices.create(amount=100, currency="USDT", network="tron")
+invoice = granthe.invoices.create(amount=100, currency="USDT", network="tron")
 
 # Get by ID
-invoice = flow.invoices.get("inv_abc123")
+invoice = granthe.invoices.get("inv_abc123")
 
 # List with filters
-result = flow.invoices.list(status="paid", page=1, limit=20)
+result = granthe.invoices.list(status="paid", page=1, limit=20)
 for inv in result.items:
     print(inv.id, inv.amount, inv.status)
 
 # Cancel
-flow.invoices.cancel("inv_abc123")
+granthe.invoices.cancel("inv_abc123")
 ```
 
 ### Payouts
 
 ```python
 # Single payout
-payout = flow.payouts.create(
+payout = granthe.payouts.create(
     amount=50, currency="USDT", network="tron",
     destination="TXyz...addr",
 )
 
 # Batch payout
-payouts = flow.payouts.create_batch([
+payouts = granthe.payouts.create_batch([
     {"amount": 50, "currency": "USDT", "network": "tron", "destination_address": "TXyz..."},
     {"amount": 25, "currency": "USDT", "network": "tron", "destination_address": "TAbc..."},
 ])
 
 # Check status
-payout = flow.payouts.get("pout_abc123")
+payout = granthe.payouts.get("pout_abc123")
 ```
 
 ### Wallets
 
 ```python
 # Generate a new deposit wallet
-wallet = flow.wallets.generate(network="ethereum", currency="USDT")
+wallet = granthe.wallets.generate(network="ethereum", currency="USDT")
 print(wallet.address)
 
 # List wallets
-result = flow.wallets.list(network="tron")
+result = granthe.wallets.list(network="tron")
 
 # Check balance
-wallet = flow.wallets.balance("wal_abc123")
+wallet = granthe.wallets.balance("wal_abc123")
 ```
 
 ### Swaps
@@ -117,14 +117,14 @@ swap = flow.swaps.create("BTC", "USDT", amount=0.01)
 ### Webhooks
 
 ```python
-from granthe import Flow, InvalidSignatureError
+from granthe import Granthe, InvalidSignatureError
 
-flow = Flow(api_key="vf_live_...", webhook_secret="whsec_...")
+granthe = Granthe(api_key="vf_live_...", webhook_secret="whsec_...")
 
 # In your webhook handler:
 def handle_webhook(request):
     payload = request.body
-    signature = request.headers["X-Flow-Signature"]
+    signature = request.headers["X-Granthe-Signature"]
 
     try:
         event = flow.webhooks.verify(payload, signature)
@@ -141,12 +141,12 @@ def handle_webhook(request):
 ## Error Handling
 
 ```python
-from granthe import Flow, FlowError, AuthenticationError, RateLimitError
+from granthe import Granthe, FlowError, AuthenticationError, RateLimitError
 
-flow = Flow(api_key="vf_live_...")
+granthe = Granthe(api_key="vf_live_...")
 
 try:
-    invoice = flow.invoices.create(amount=100, currency="USDT", network="tron")
+    invoice = granthe.invoices.create(amount=100, currency="USDT", network="tron")
 except AuthenticationError:
     print("Bad API key")
 except RateLimitError as e:
@@ -158,7 +158,7 @@ except FlowError as e:
 ## Configuration
 
 ```python
-flow = Flow(
+granthe = Granthe(
     api_key="vf_live_...",
     webhook_secret="whsec_...",      # For webhook verification
     base_url="https://granthe.io/api/flow",  # Default

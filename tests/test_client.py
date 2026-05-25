@@ -1,4 +1,4 @@
-"""Tests for the Flow Python SDK."""
+"""Tests for the Granthe Python SDK."""
 
 import hashlib
 import hmac
@@ -9,16 +9,16 @@ import pytest
 import respx
 
 from granthe import (
-    Flow,
-    AsyncFlow,
-    FlowError,
+    Granthe,
+    AsyncGranthe,
+    GrantheError,
     AuthenticationError,
     NotFoundError,
     RateLimitError,
     InvalidSignatureError,
 )
 
-BASE = "https://granthe.io/api/flow"
+BASE = "https://app.granthe.io/api/flow"
 
 
 # ── Sync Client Tests ──
@@ -27,16 +27,16 @@ BASE = "https://granthe.io/api/flow"
 class TestFlow:
     def test_init_requires_api_key(self):
         with pytest.raises(ValueError, match="api_key is required"):
-            Flow(api_key="")
+            Granthe(api_key="")
 
     def test_repr(self):
-        flow = Flow(api_key="test_key")
-        assert repr(flow) == "Flow(connected)"
+        flow = Granthe(api_key="test_key")
+        assert repr(flow) == "Granthe(connected)"
         flow.close()
 
     def test_context_manager(self):
-        with Flow(api_key="test_key") as flow:
-            assert repr(flow) == "Flow(connected)"
+        with Granthe(api_key="test_key") as flow:
+            assert repr(flow) == "Granthe(connected)"
 
 
 class TestInvoices:
@@ -54,7 +54,7 @@ class TestInvoices:
                 "payment_url": "https://pay.granthe.io/inv_123",
             })
         )
-        with Flow(api_key="test_key") as flow:
+        with Granthe(api_key="test_key") as flow:
             inv = flow.invoices.create(amount=100, currency="USDT", network="tron")
             assert inv.id == "inv_123"
             assert inv.wallet_address == "TXyz123"
@@ -67,12 +67,12 @@ class TestInvoices:
             return_value=httpx.Response(200, json={
                 "id": "inv_123", "merchant_id": "m_1",
                 "amount": 100.0, "currency": "USDT", "network": "tron",
-                "status": "paid", "tx_hash": "0xabc",
+                "status": "completed", "tx_hash": "0xabc",
             })
         )
-        with Flow(api_key="test_key") as flow:
+        with Granthe(api_key="test_key") as flow:
             inv = flow.invoices.get("inv_123")
-            assert inv.status.value == "paid"
+            assert inv.status.value == "completed"
             assert inv.tx_hash == "0xabc"
 
     @respx.mock
@@ -80,13 +80,13 @@ class TestInvoices:
         respx.get(f"{BASE}/invoices").mock(
             return_value=httpx.Response(200, json={
                 "items": [
-                    {"id": "inv_1", "merchant_id": "m_1", "amount": 50, "currency": "USDT", "network": "tron", "status": "paid"},
+                    {"id": "inv_1", "merchant_id": "m_1", "amount": 50, "currency": "USDT", "network": "tron", "status": "completed"},
                     {"id": "inv_2", "merchant_id": "m_1", "amount": 75, "currency": "BTC", "network": "bitcoin", "status": "pending"},
                 ],
                 "total": 2, "page": 1, "per_page": 50,
             })
         )
-        with Flow(api_key="test_key") as flow:
+        with Granthe(api_key="test_key") as flow:
             result = flow.invoices.list()
             assert len(result.items) == 2
             assert result.items[0].id == "inv_1"
@@ -102,12 +102,12 @@ class TestPayouts:
                 "status": "pending",
             })
         )
-        with Flow(api_key="test_key") as flow:
+        with Granthe(api_key="test_key") as flow:
             payout = flow.payouts.create(
-                amount=50, currency="USDT", network="tron", destination="TXyz",
+                amount=50, currency="USDT", network="tron", recipient_address="TXyz",
             )
             assert payout.id == "pout_123"
-            assert payout.status.value == "pending"
+            assert payout.status == "pending"
 
     @respx.mock
     def test_batch(self):
@@ -119,7 +119,7 @@ class TestPayouts:
                 ]
             })
         )
-        with Flow(api_key="test_key") as flow:
+        with Granthe(api_key="test_key") as flow:
             payouts = flow.payouts.create_batch([
                 {"amount": 50, "currency": "USDT", "network": "tron", "destination_address": "T1"},
                 {"amount": 25, "currency": "USDT", "network": "tron", "destination_address": "T2"},
@@ -136,7 +136,7 @@ class TestWallets:
                 "currency": "USDT", "balance": 0,
             })
         )
-        with Flow(api_key="test_key") as flow:
+        with Granthe(api_key="test_key") as flow:
             wallet = flow.wallets.generate(network="ethereum", currency="USDT")
             assert wallet.address == "0xabc"
             assert wallet.network == "ethereum"
@@ -151,7 +151,7 @@ class TestSwaps:
                 "from_amount": 0.01, "to_amount": 670.50, "rate": 67050.0,
             })
         )
-        with Flow(api_key="test_key") as flow:
+        with Granthe(api_key="test_key") as flow:
             quote = flow.swaps.quote("BTC", "USDT", 0.01)
             assert quote.to_amount == 670.50
             assert quote.rate == 67050.0
@@ -161,16 +161,16 @@ class TestWebhooks:
     def test_verify_valid(self):
         secret = "whsec_test123"
         payload = json.dumps({"id": "evt_1", "type": "invoice.paid", "data": {"id": "inv_1"}})
-        sig = hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
+        sig = "sha256=" + hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
 
-        flow = Flow(api_key="test_key", webhook_secret=secret)
+        flow = Granthe(api_key="test_key", webhook_secret=secret)
         event = flow.webhooks.verify(payload, sig)
         assert event.type == "invoice.paid"
         assert event.data["id"] == "inv_1"
         flow.close()
 
     def test_verify_invalid(self):
-        flow = Flow(api_key="test_key", webhook_secret="whsec_test123")
+        flow = Granthe(api_key="test_key", webhook_secret="whsec_test123")
         with pytest.raises(InvalidSignatureError):
             flow.webhooks.verify('{"test": true}', "badsig")
         flow.close()
@@ -178,9 +178,9 @@ class TestWebhooks:
     def test_is_valid(self):
         secret = "whsec_test123"
         payload = '{"id": "evt_1", "type": "test"}'
-        sig = hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
+        sig = "sha256=" + hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
 
-        flow = Flow(api_key="test_key", webhook_secret=secret)
+        flow = Granthe(api_key="test_key", webhook_secret=secret)
         assert flow.webhooks.is_valid(payload, sig) is True
         assert flow.webhooks.is_valid(payload, "wrong") is False
         flow.close()
@@ -192,7 +192,7 @@ class TestErrors:
         respx.get(f"{BASE}/invoices/x").mock(
             return_value=httpx.Response(401, json={"detail": "Invalid API key"})
         )
-        with Flow(api_key="bad_key") as flow:
+        with Granthe(api_key="bad_key") as flow:
             with pytest.raises(AuthenticationError):
                 flow.invoices.get("x")
 
@@ -201,7 +201,7 @@ class TestErrors:
         respx.get(f"{BASE}/invoices/nonexistent").mock(
             return_value=httpx.Response(404, json={"detail": "Not found"})
         )
-        with Flow(api_key="test_key") as flow:
+        with Granthe(api_key="test_key") as flow:
             with pytest.raises(NotFoundError):
                 flow.invoices.get("nonexistent")
 
@@ -210,7 +210,7 @@ class TestErrors:
         respx.get(f"{BASE}/invoices/x").mock(
             return_value=httpx.Response(429, json={"detail": "Too many requests"}, headers={"Retry-After": "5"})
         )
-        with Flow(api_key="test_key") as flow:
+        with Granthe(api_key="test_key") as flow:
             with pytest.raises(RateLimitError) as exc_info:
                 flow.invoices.get("x")
             assert exc_info.value.retry_after == 5.0
@@ -230,7 +230,7 @@ class TestAsyncFlow:
                 "status": "pending", "wallet_address": "bc1q...",
             })
         )
-        async with AsyncFlow(api_key="test_key") as flow:
+        async with AsyncGranthe(api_key="test_key") as flow:
             inv = await flow.invoices.create(amount=200, currency="BTC", network="bitcoin")
             assert inv.id == "inv_async"
             assert inv.wallet_address == "bc1q..."
