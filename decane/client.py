@@ -1,4 +1,4 @@
-"""Granthe client — the main entry point for the SDK."""
+"""Decane client — the main entry point for the SDK."""
 
 from __future__ import annotations
 
@@ -10,17 +10,16 @@ from .resources.wallets import AsyncWallets, Wallets
 from .resources.webhooks import Webhooks
 from .resources.payment_links import AsyncPaymentLinks, PaymentLinks
 from .resources.subscriptions import AsyncSubscriptions, Subscriptions
-from .resources.teams import AsyncTeams, Teams
 
 
-class Granthe:
-    """Synchronous Granthe client.
+class Decane:
+    """Synchronous Decane client.
 
     Usage::
 
-        from granthe import Granthe
+        from decane import Decane
 
-        flow = Granthe(api_key="vf_live_...", webhook_secret="whsec_...")
+        flow = Decane(api_key="gr_...", webhook_secret="gr_whsec_...")
 
         # Create an invoice
         invoice = flow.invoices.create(
@@ -59,30 +58,29 @@ class Granthe:
         self.webhooks = Webhooks(webhook_secret or "")
         self.payment_links = PaymentLinks(self._http)
         self.subscriptions = Subscriptions(self._http)
-        self.teams = Teams(self._http)
 
     def close(self) -> None:
         """Close the underlying HTTP client."""
         self._http.close()
 
-    def __enter__(self) -> Granthe:
+    def __enter__(self) -> Decane:
         return self
 
     def __exit__(self, *args: object) -> None:
         self.close()
 
     def __repr__(self) -> str:
-        return "Granthe(connected)"
+        return "Decane(connected)"
 
 
-class AsyncGranthe:
-    """Async Granthe client.
+class AsyncDecane:
+    """Async Decane client.
 
     Usage::
 
-        from granthe import AsyncGranthe
+        from decane import AsyncDecane
 
-        async with AsyncGranthe(api_key="vf_live_...") as flow:
+        async with AsyncDecane(api_key="gr_...") as flow:
             invoice = await flow.invoices.create(
                 amount=100, currency="USDT", network="tron",
             )
@@ -109,17 +107,16 @@ class AsyncGranthe:
         self.webhooks = Webhooks(webhook_secret or "")
         self.payment_links = AsyncPaymentLinks(self._http)
         self.subscriptions = AsyncSubscriptions(self._http)
-        self.teams = AsyncTeams(self._http)
 
     async def close(self) -> None:
         """Close the underlying HTTP client."""
         await self._http.close()
 
-    async def __aenter__(self) -> AsyncGranthe:
+    async def __aenter__(self) -> AsyncDecane:
         return self
 
     async def __aexit__(self, *args: object) -> None:
         await self.close()
 
     def __repr__(self) -> str:
-        return "AsyncGranthe(connected)"
+        return "AsyncDecane(connected)"

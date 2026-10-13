@@ -1,22 +1,23 @@
-"""HTTP transport layer for Granthe SDK."""
+"""HTTP transport layer for Decane SDK."""
 
 from __future__ import annotations
 
 import time
+import uuid
 from typing import Any
 
 import httpx
 
 from ..errors import (
     AuthenticationError,
-    GrantheError,
+    DecaneError,
     NotFoundError,
     RateLimitError,
     ServerError,
     ValidationError,
 )
 
-DEFAULT_BASE_URL = "https://app.granthe.io/api/flow/"
+DEFAULT_BASE_URL = "https://api.decane.io/api/v1/"
 DEFAULT_TIMEOUT = 30.0
 MAX_RETRIES = 3
 RETRY_STATUSES = {429, 500, 502, 503, 504}
@@ -26,11 +27,18 @@ def _build_headers(api_key: str, api_secret: str | None = None) -> dict[str, str
     headers = {
         "X-API-Key": api_key,
         "Content-Type": "application/json",
-        "User-Agent": "granthe-python/0.4.2",
+        "User-Agent": "decane-python/0.8.0",
     }
     if api_secret:
         headers["X-API-Secret"] = api_secret
     return headers
+
+
+def _with_idempotency(kwargs: dict[str, Any], key: str | None) -> dict[str, Any]:
+    """Return kwargs with an Idempotency-Key header (generated if not given)."""
+    headers = dict(kwargs.get("headers") or {})
+    headers["Idempotency-Key"] = key or str(uuid.uuid4())
+    return {**kwargs, "headers": headers}
 
 
 def _raise_for_status(response: httpx.Response) -> None:
@@ -58,7 +66,7 @@ def _raise_for_status(response: httpx.Response) -> None:
     if response.status_code >= 500:
         raise ServerError(message)
 
-    raise GrantheError(message, code=code, status=response.status_code)
+    raise DecaneError(message, code=code, status=response.status_code)
 
 
 class SyncHTTP:
@@ -93,16 +101,22 @@ class SyncHTTP:
                 if attempt < MAX_RETRIES - 1:
                     time.sleep((2**attempt) * 0.5)
                     continue
-                raise GrantheError(f"Connection error: {e}", code="network_error") from e
+                raise DecaneError(f"Connection error: {e}", code="network_error") from e
         if last_exc:
-            raise GrantheError(f"Max retries exceeded: {last_exc}", code="network_error") from last_exc
-        raise GrantheError("Unexpected error", code="unknown")
+            raise DecaneError(f"Max retries exceeded: {last_exc}", code="network_error") from last_exc
+        raise DecaneError("Unexpected error", code="unknown")
 
     def get(self, path: str, **kwargs: Any) -> Any:
         return self.request("GET", path, **kwargs)
 
-    def post(self, path: str, **kwargs: Any) -> Any:
+    def post(self, path: str, *, idempotency_key: str | None = None, **kwargs: Any) -> Any:
+        if idempotency_key is not None:
+            kwargs = _with_idempotency(kwargs, idempotency_key)
         return self.request("POST", path, **kwargs)
+
+    def post_idempotent(self, path: str, *, idempotency_key: str | None = None, **kwargs: Any) -> Any:
+        """POST with an Idempotency-Key header (random UUID if none given)."""
+        return self.request("POST", path, **_with_idempotency(kwargs, idempotency_key))
 
     def put(self, path: str, **kwargs: Any) -> Any:
         return self.request("PUT", path, **kwargs)
@@ -151,16 +165,22 @@ class AsyncHTTP:
                 if attempt < MAX_RETRIES - 1:
                     await asyncio.sleep((2**attempt) * 0.5)
                     continue
-                raise GrantheError(f"Connection error: {e}", code="network_error") from e
+                raise DecaneError(f"Connection error: {e}", code="network_error") from e
         if last_exc:
-            raise GrantheError(f"Max retries exceeded: {last_exc}", code="network_error") from last_exc
-        raise GrantheError("Unexpected error", code="unknown")
+            raise DecaneError(f"Max retries exceeded: {last_exc}", code="network_error") from last_exc
+        raise DecaneError("Unexpected error", code="unknown")
 
     async def get(self, path: str, **kwargs: Any) -> Any:
         return await self.request("GET", path, **kwargs)
 
-    async def post(self, path: str, **kwargs: Any) -> Any:
+    async def post(self, path: str, *, idempotency_key: str | None = None, **kwargs: Any) -> Any:
+        if idempotency_key is not None:
+            kwargs = _with_idempotency(kwargs, idempotency_key)
         return await self.request("POST", path, **kwargs)
+
+    async def post_idempotent(self, path: str, *, idempotency_key: str | None = None, **kwargs: Any) -> Any:
+        """POST with an Idempotency-Key header (random UUID if none given)."""
+        return await self.request("POST", path, **_with_idempotency(kwargs, idempotency_key))
 
     async def put(self, path: str, **kwargs: Any) -> Any:
         return await self.request("PUT", path, **kwargs)

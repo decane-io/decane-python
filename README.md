@@ -1,40 +1,44 @@
-# granthe
+# decane-sdk
 
-Official Python SDK for Granthe — institutional liquidity rail for crypto settlement.
+Official Python SDK for Decane — institutional liquidity rail for crypto settlement.
 
-[![PyPI](https://img.shields.io/pypi/v/granthe)](https://pypi.org/project/granthe/)
-[![Python](https://img.shields.io/pypi/pyversions/granthe)](https://pypi.org/project/granthe/)
+> **Renamed from granthe.** The old package was `granthe` on PyPI. The API and webhook formats are unchanged, and the server still sends `Granthe-Signature` (and `X-Granthe-Signature`) for older integrations. Read `Decane-Signature` first and fall back to `Granthe-Signature` if you handle both.
+
+[![PyPI](https://img.shields.io/pypi/v/decane-sdk)](https://pypi.org/project/decane-sdk/)
+[![Python](https://img.shields.io/pypi/pyversions/decane-sdk)](https://pypi.org/project/decane-sdk/)
 
 ## Install
 
 ```bash
-pip install granthe
+pip install decane-sdk
 ```
 
 ## Quick Start
 
 ```python
-from granthe import Granthe
+from decane import Decane
 
-granthe = Granthe(api_key="vf_live_...", webhook_secret="whsec_...")
+decane = Decane(api_key="gr_...", webhook_secret="gr_whsec_...")
 
 # Create a payment invoice
-invoice = granthe.invoices.create(
+invoice = decane.invoices.create(
     amount=100.00,
-    currency="USDT",
+    crypto_currency="USDT",
     network="tron",
     description="Premium Plan",
     customer_email="buyer@example.com",
+    idempotency_key="order-1042",  # optional, safe to retry
 )
 print(f"Pay to: {invoice.wallet_address}")
 print(f"Status: {invoice.status}")
 
 # Request a payout
-payout = granthe.payouts.create(
+payout = decane.payouts.create(
     amount=50.00,
     currency="USDT",
     network="tron",
-    destination="TXyz...recipientAddress",
+    recipient_address="TXyz...recipientAddress",
+    idempotency_key="payout-1042",  # optional, safe to retry
 )
 print(f"Payout ID: {payout.id}")
 ```
@@ -42,11 +46,11 @@ print(f"Payout ID: {payout.id}")
 ## Async Support
 
 ```python
-from granthe import AsyncFlow
+from decane import AsyncFlow
 
-async with AsyncFlow(api_key="vf_live_...") as flow:
-    invoice = await granthe.invoices.create(
-        amount=100, currency="USDT", network="ethereum",
+async with AsyncFlow(api_key="gr_...") as flow:
+    invoice = await decane.invoices.create(
+        amount=100, crypto_currency="USDT", network="ethereum",
     )
 ```
 
@@ -56,51 +60,51 @@ async with AsyncFlow(api_key="vf_live_...") as flow:
 
 ```python
 # Create
-invoice = granthe.invoices.create(amount=100, currency="USDT", network="tron")
+invoice = decane.invoices.create(amount=100, crypto_currency="USDT", network="tron")
 
 # Get by ID
-invoice = granthe.invoices.get("inv_abc123")
+invoice = decane.invoices.get("inv_abc123")
 
 # List with filters
-result = granthe.invoices.list(status="paid", page=1, limit=20)
+result = decane.invoices.list(status="paid", page=1, limit=20)
 for inv in result.items:
     print(inv.id, inv.amount, inv.status)
 
 # Cancel
-granthe.invoices.cancel("inv_abc123")
+decane.invoices.cancel("inv_abc123")
 ```
 
 ### Payouts
 
 ```python
 # Single payout
-payout = granthe.payouts.create(
+payout = decane.payouts.create(
     amount=50, currency="USDT", network="tron",
-    destination="TXyz...addr",
+    recipient_address="TXyz...addr",
 )
 
 # Batch payout
-payouts = granthe.payouts.create_batch([
-    {"amount": 50, "currency": "USDT", "network": "tron", "destination_address": "TXyz..."},
-    {"amount": 25, "currency": "USDT", "network": "tron", "destination_address": "TAbc..."},
+payouts = decane.payouts.create_batch([
+    {"amount": 50, "currency": "USDT", "network": "tron", "recipient_address": "TXyz..."},
+    {"amount": 25, "currency": "USDT", "network": "tron", "recipient_address": "TAbc..."},
 ])
 
 # Check status
-payout = granthe.payouts.get("pout_abc123")
+payout = decane.payouts.get("pout_abc123")
 ```
 
 ### Wallets
 
 ```python
 # Generate a new deposit wallet
-wallet = granthe.wallets.generate(network="ethereum", currency="USDT")
+wallet = decane.wallets.generate(network="ethereum", currency="USDT")
 print(wallet.address)
 
 # List wallets
-result = granthe.wallets.list(network="tron")
+result = decane.wallets.list(network="tron")
 
 # Check balance
-wallet = granthe.wallets.balance("wal_abc123")
+wallet = decane.wallets.balance("wal_abc123")
 ```
 
 ### Swaps
@@ -117,51 +121,54 @@ swap = flow.swaps.create("BTC", "USDT", amount=0.01)
 ### Webhooks
 
 ```python
-from granthe import Granthe, InvalidSignatureError
+from decane import Decane, InvalidSignatureError
 
-granthe = Granthe(api_key="vf_live_...", webhook_secret="whsec_...")
+decane = Decane(api_key="gr_...", webhook_secret="gr_whsec_...")
 
-# In your webhook handler:
+# In your webhook handler. Use the raw body, not re-serialized JSON.
 def handle_webhook(request):
     payload = request.body
-    signature = request.headers["X-Granthe-Signature"]
+    header = request.headers.get("Decane-Signature") or request.headers["Granthe-Signature"]  # t=<unix>,v1=<hex>
 
     try:
-        event = flow.webhooks.verify(payload, signature)
+        event = decane.webhooks.construct_event(payload, header, tolerance=300)
     except InvalidSignatureError:
         return {"error": "Invalid signature"}, 400
 
-    if event.type == "invoice.paid":
+    # X-Decane-Delivery is the same on every retry, so use it to drop duplicates.
+    if event.type == "invoice.completed":
         invoice_id = event.data["id"]
-        print(f"Invoice {invoice_id} paid!")
+        print(f"Invoice {invoice_id} completed!")
 
     return {"status": "ok"}
 ```
 
+`decane.webhooks.verify_signature(payload, header)` returns a bool if you want to parse the body yourself. The old `webhooks.verify(payload, signature)` for `X-Decane-Signature` (or `X-Granthe-Signature`) still works but is deprecated, because it has no timestamp check.
+
 ## Error Handling
 
 ```python
-from granthe import Granthe, FlowError, AuthenticationError, RateLimitError
+from decane import Decane, DecaneError, AuthenticationError, RateLimitError
 
-granthe = Granthe(api_key="vf_live_...")
+decane = Decane(api_key="gr_...")
 
 try:
-    invoice = granthe.invoices.create(amount=100, currency="USDT", network="tron")
+    invoice = decane.invoices.create(amount=100, crypto_currency="USDT", network="tron")
 except AuthenticationError:
     print("Bad API key")
 except RateLimitError as e:
     print(f"Rate limited, retry after {e.retry_after}s")
-except FlowError as e:
+except DecaneError as e:
     print(f"Error: {e.message} (code={e.code}, status={e.status})")
 ```
 
 ## Configuration
 
 ```python
-granthe = Granthe(
-    api_key="vf_live_...",
-    webhook_secret="whsec_...",      # For webhook verification
-    base_url="https://granthe.io/api/flow",  # Default
+decane = Decane(
+    api_key="gr_...",
+    webhook_secret="gr_whsec_...",      # For webhook verification
+    base_url="https://api.decane.io/api/v1",  # Default
     timeout=30.0,                     # Request timeout in seconds
 )
 ```

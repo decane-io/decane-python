@@ -27,12 +27,17 @@ class Invoices:
         callback_url: str | None = None,
         return_url: str | None = None,
         metadata: dict[str, Any] | None = None,
+        idempotency_key: str | None = None,
     ) -> Invoice:
         """Create a payment invoice.
 
         Omit ``network`` and ``crypto_currency`` to create a **flex invoice**
         where the customer picks their preferred crypto on the payment page.
         Supply both to lock the rate at creation time (fixed invoice).
+
+        ``idempotency_key`` is sent as the ``Idempotency-Key`` header. If you
+        omit it, a random key is generated so automatic retries cannot create
+        a second invoice. Pass your own key to make retries from your side safe.
         """
         payload: dict[str, Any] = {"amount": amount, "currency": currency}
         if network is not None:
@@ -52,7 +57,7 @@ class Invoices:
         if metadata is not None:
             payload["metadata"] = metadata
 
-        data = self._http.post("/invoices", json=payload)
+        data = self._http.post_idempotent("/invoices", json=payload, idempotency_key=idempotency_key)
         return Invoice.from_dict(data)
 
     def get(self, invoice_id: str) -> Invoice:
@@ -102,6 +107,7 @@ class AsyncInvoices:
         callback_url: str | None = None,
         return_url: str | None = None,
         metadata: dict[str, Any] | None = None,
+        idempotency_key: str | None = None,
     ) -> Invoice:
         payload: dict[str, Any] = {"amount": amount, "currency": currency}
         if network is not None:
@@ -121,7 +127,7 @@ class AsyncInvoices:
         if metadata is not None:
             payload["metadata"] = metadata
 
-        data = await self._http.post("/invoices", json=payload)
+        data = await self._http.post_idempotent("/invoices", json=payload, idempotency_key=idempotency_key)
         return Invoice.from_dict(data)
 
     async def get(self, invoice_id: str) -> Invoice:

@@ -3,13 +3,13 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "granthe"
-version = "0.5.0"
-description = "Official Python SDK for Granthe — institutional liquidity rail for crypto settlement"
+name = "decane-sdk"
+version = "0.8.0"
+description = "Official Python SDK for Decane — institutional liquidity rail for crypto settlement"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
-authors = [{ name = "Granthe", email = "dev@granthe.io" }]
+authors = [{ name = "Decane", email = "dev@decane.io" }]
 keywords = ["crypto", "payments", "bitcoin", "ethereum", "stablecoins", "payment-gateway"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -31,13 +31,13 @@ dependencies = [
 dev = ["pytest", "pytest-asyncio", "respx", "ruff"]
 
 [project.urls]
-Homepage = "https://app.granthe.io"
-Documentation = "https://app.granthe.io/docs"
-Repository = "https://github.com/Granthe-io/granthe-python"
-Issues = "https://github.com/Granthe-io/granthe-python/issues"
+Homepage = "https://decane.io"
+Documentation = "https://decane.io/docs"
+Repository = "https://github.com/Decane-io/decane-python"
+Issues = "https://github.com/Decane-io/decane-python/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["granthe"]
+packages = ["decane"]
 
 [tool.ruff]
 target-version = "py310"

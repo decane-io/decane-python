@@ -22,8 +22,13 @@ class Payouts:
         recipient_address: str,
         *,
         reference_id: str | None = None,
+        idempotency_key: str | None = None,
     ) -> Payout:
-        """Request a payout to an external wallet address."""
+        """Request a payout to an external wallet address.
+
+        ``idempotency_key`` is sent as the ``Idempotency-Key`` header. If you
+        omit it, a random key is generated so automatic retries are safe.
+        """
         payload: dict[str, Any] = {
             "amount": amount,
             "currency": currency,
@@ -33,7 +38,7 @@ class Payouts:
         if reference_id is not None:
             payload["reference_id"] = reference_id
 
-        data = self._http.post("/vendor/payout", json=payload)
+        data = self._http.post_idempotent("/vendor/payout", json=payload, idempotency_key=idempotency_key)
         return Payout.from_dict(data)
 
     def create_batch(
@@ -41,15 +46,18 @@ class Payouts:
         payouts: list[dict[str, Any]],
         *,
         reference_id: str | None = None,
+        idempotency_key: str | None = None,
     ) -> list[Payout]:
         """Create multiple payouts in a single request.
 
         Each item should have: amount, currency, network, recipient_address.
+
+        ``idempotency_key`` works as in :meth:`create`.
         """
         body: dict[str, Any] = {"payouts": payouts}
         if reference_id is not None:
             body["reference_id"] = reference_id
-        data = self._http.post("/vendor/payout/batch", json=body)
+        data = self._http.post_idempotent("/vendor/payout/batch", json=body, idempotency_key=idempotency_key)
         items = data if isinstance(data, list) else data.get("payouts", data.get("items", []))
         return [Payout.from_dict(p) for p in items]
 
@@ -87,6 +95,7 @@ class AsyncPayouts:
         recipient_address: str,
         *,
         reference_id: str | None = None,
+        idempotency_key: str | None = None,
     ) -> Payout:
         payload: dict[str, Any] = {
             "amount": amount,
@@ -97,7 +106,7 @@ class AsyncPayouts:
         if reference_id is not None:
             payload["reference_id"] = reference_id
 
-        data = await self._http.post("/vendor/payout", json=payload)
+        data = await self._http.post_idempotent("/vendor/payout", json=payload, idempotency_key=idempotency_key)
         return Payout.from_dict(data)
 
     async def create_batch(
@@ -105,11 +114,12 @@ class AsyncPayouts:
         payouts: list[dict[str, Any]],
         *,
         reference_id: str | None = None,
+        idempotency_key: str | None = None,
     ) -> list[Payout]:
         body: dict[str, Any] = {"payouts": payouts}
         if reference_id is not None:
             body["reference_id"] = reference_id
-        data = await self._http.post("/vendor/payout/batch", json=body)
+        data = await self._http.post_idempotent("/vendor/payout/batch", json=body, idempotency_key=idempotency_key)
         items = data if isinstance(data, list) else data.get("payouts", data.get("items", []))
         return [Payout.from_dict(p) for p in items]
 

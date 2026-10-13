@@ -1,8 +1,8 @@
-"""Granthe — Official Python SDK for institutional liquidity rail for crypto settlement."""
+"""Decane — Official Python SDK for institutional liquidity rail for crypto settlement."""
 
-from .client import Granthe, AsyncGranthe
+from .client import Decane, AsyncDecane
 from .errors import (
-    GrantheError,
+    DecaneError,
     AuthenticationError,
     NotFoundError,
     ValidationError,
@@ -22,11 +22,11 @@ from .types import (
     WebhookEvent,
 )
 
-__version__ = "0.5.0"
+__version__ = "0.8.0"
 __all__ = [
-    "Granthe",
-    "AsyncGranthe",
-    "GrantheError",
+    "Decane",
+    "AsyncDecane",
+    "DecaneError",
     "AuthenticationError",
     "NotFoundError",
     "ValidationError",

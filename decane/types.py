@@ -1,4 +1,4 @@
-"""Granthe SDK data types."""
+"""Decane SDK data types."""
 
 from __future__ import annotations
 
